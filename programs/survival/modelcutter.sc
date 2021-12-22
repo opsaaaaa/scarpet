@@ -7,6 +7,7 @@ __config()->{
   'commands' -> {
     'list' -> 'list_constructors',
     '<packname> set <item> <model>' -> 'set_model_recipe',
+    '<packname> range <item> <rangeMin> <rangeMax>' -> 'range_model_recipes',
     '<packname> list' -> 'list_recipes',
     '<packname> raw' -> 'read_raw_recipes',
     '<packname> build' -> 'build_datapack'
@@ -14,7 +15,9 @@ __config()->{
   'arguments' -> {
     'packname' -> {'type' -> 'string'},
     'item' -> {'type' -> 'item'},
-    'model' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000}
+    'model' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000},
+    'rangeMin' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000},
+    'rangeMax' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000}
   }
 };
 
@@ -35,13 +38,22 @@ build_datapack(packname) -> (
   );
 );
 
+range_model_recipes(packname, item, min, max) -> (
+  item = item:0;
+  datapack = _read_pack(packname) || _default_datapack(packname);
+  for(range(min,max),
+    datapack:'data':packname:'recipes':str('%s_%d.json', item, _) = _new_model_recipe(item, _);
+    print(player(), str('%s_%d.json recipe prepared!', item, _));
+  );
+  _write_pack(packname, datapack);
+);
 
 set_model_recipe(packname, item, model) -> (
   item = item:0;
   datapack = _read_pack(packname) || _default_datapack(packname);
   datapack:'data':packname:'recipes':str('%s_%d.json', item, model) = _new_model_recipe(item, model);
   _write_pack(packname, datapack);
-  print(player(), str('%s_%d.json prepared!', item, model));
+  print(player(), str('%s_%d.json recipe prepared!', item, model));
 );
 
 read_raw_recipes(packname) -> (

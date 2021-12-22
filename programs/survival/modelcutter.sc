@@ -5,6 +5,7 @@ __config()->{
     'nbtcrafting' -> '*'
   },
   'commands' -> {
+    'list' -> 'list_constructors',
     '<packname> set <item> <model>' -> 'set_model_recipe',
     '<packname> list' -> 'list_recipes',
     '<packname> raw' -> 'read_raw_recipes',
@@ -18,22 +19,16 @@ __config()->{
 };
 
 
-// help() -> (
-//   print(player(), 
-//     '`/modelcutter` adds stonecutter recipes with the CustomModelData tag. 
-//     A resourcepack is required for this to have a visual effect.');
-//   print(player(), 
-//     '`/modelcutter add <datapackName> <item> <model>`');
-//   print(player(), 
-//     '`/modelcutter range <datapackName> <item> <maxModel> <minModel>`');
-// );
+list_constructors() -> (
+  print(player(), list_files('packs/', 'json'))
+);
 
 build_datapack(packname) -> (
   p = player();
-  datapack = read_file(packname, 'json');
+  datapack = _read_pack(packname);
   if(datapack, 
     create_datapack(packname, datapack);
-    delete_file(packname, 'json');
+    _delete_pack(packname);
     print(p, str('Built %s datapack!', packname ));
   ,
     print(p,'No datapack contructor named `'+packname+'` found.');
@@ -43,15 +38,15 @@ build_datapack(packname) -> (
 
 set_model_recipe(packname, item, model) -> (
   item = item:0;
-  datapack = read_file(packname, 'json') || _default_datapack(packname);
+  datapack = _read_pack(packname) || _default_datapack(packname);
   datapack:'data':packname:'recipes':str('%s_%d.json', item, model) = _new_model_recipe(item, model);
-  write_file(packname, 'json', datapack);
+  _write_pack(packname, datapack);
   print(player(), str('%s_%d.json prepared!', item, model));
 );
 
 read_raw_recipes(packname) -> (
   p = player();
-  datapack = read_file(packname, 'json');
+  datapack = _read_pack(packname);
   if(datapack, 
     print(p, datapack);
   ,
@@ -59,10 +54,9 @@ read_raw_recipes(packname) -> (
   );
 );
 
-
 list_recipes(packname) -> (
   p = player();
-  datapack = read_file(packname, 'json');
+  datapack = _read_pack(packname);
   if(datapack, 
     print(p, str('Current %s cunstructor recipes', packname));
     print(p, '---');
@@ -73,6 +67,7 @@ list_recipes(packname) -> (
     print(p,'No datapack contructor named `'+packname+'` found.');
   );
 );
+
 
 
 _default_datapack(packname) -> (
@@ -96,64 +91,16 @@ _new_model_recipe(item, model) -> (
   }
 );
 
-// _command_thing() -> (
-//   datapack = {};
-//   put(
-//     datapack, 
-//     'data.'+packname+'.recipes.'+replace(item,'.+:','')+'_model_'+model+'.json', 
-//     _new_model_recipe(item, model)  
-//   );
-// );
-
-// _add_model_recipe(name, item, model) -> (
-//   item_name = replace(item,'.+:','');
-//   create_datapack(name+item+model, {
-//     'data' -> { name -> { 'recipes' -> { item_name+'_model_'+model+'.json' -> {
-//       'type' -> 'stonecutting',
-//       'ingredient' -> {
-//         'item' -> item
-//       },
-//       'result' -> {
-//         'item' -> item,
-//         'data' -> {
-//           'CustomModelData' -> model
-//         }
-//       },
-//       'count' -> 1
-//     } } } }
-//   });
-// );
-
-// __initalize() -> (
-
-//   for(range(21,29), 
-//     if( 
-//       _add_model_recipe('pumpkin_hats', 'minecraft:carved_pumpkin', _);
-//       // print(player(), 'hat_'+_+'.json');
-//       // create_datapack('pumkin_hat_'+_, {
-//       //   'data' -> { 'hats' -> { 'recipes' -> { 'hat_'+_+'.json' -> {
-//       //     'type' -> 'stonecutting',
-//       //     'ingredient' -> {
-//       //       'item' -> 'minecraft:carved_pumpkin'
-//       //     },
-//       //     'result' -> {
-//       //       'item' -> 'minecraft:carved_pumpkin',
-//       //       'data' -> {
-//       //         'CustomModelData' -> _
-//       //       }
-//       //     },
-//       //     'count' -> 1
-//       //   } } } }
-//       // });
-//     ,
-//       print(player(), _+' worked!')
-//     ,
-//       print(player(), _+' failed!');
-//     );
-//   );
-
-// );
 
 
+_read_pack(packname) -> (
+  read_file(str('packs/%s',packname), 'json');
+);
 
-// __initalize();
+_write_pack(packname, datapack) -> (
+  write_file(str('packs/%s',packname), 'json', datapack);
+);
+
+_delete_pack(packname) -> (
+  delete_file(str('packs/%s',packname), 'json');
+);

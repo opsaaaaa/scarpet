@@ -5,6 +5,7 @@ __config()->{
     'nbtcrafting' -> '*'
   },
   'commands' -> {
+    '' -> 'help',
     'list' -> 'list_constructors',
     '<packname> set <item> <model>' -> 'set_model_recipe',
     '<packname> range <item> <rangeMin> <rangeMax>' -> 'range_model_recipes',
@@ -21,6 +22,41 @@ __config()->{
   }
 };
 
+help() -> (
+  print(player(), join('\n',[
+    '',
+    'This command makes CustomModelData varients craftable in the stonecutter.',
+    'For example it could make various carved pumkin hats craftable.',
+    'This script requires nbtcrafting mod to function.',
+    'It does this by generating a datapack containing stonecutter recipes for each model varient.',
+    '',
+    'Step #1. Install/ create a resource pack with custom model varients.',
+    'If you are hosting a server you will want to look into server resourcepacks.',
+    '',
+    'Step #2. prepare the model recipes.',
+    'The resource pack list all the numbers it uses for the CustomModelData.',
+    'you can prepare recipes for these with one of two commands',
+    '',
+    '/modelcutter <packname> set <item> <model>',
+    'ie. /modelcutter pumpkin_hats set carved_pumpkin 21',
+    'Run this command for each custom carved_pumpkin varient you want craftable.',
+    '',
+    '/modelcutter <packname> range <item> <rangeMin> <rangeMax>',
+    'ie. /modelcutter pumpkin_hats range carved_pumpkin 21 29',
+    'This command will prepare a recipe for each varient between 21 and 29. 21,22,23...29 ',
+    '',
+    'Step #3. Once all the recipes are prepared you can build the datapack.',
+    '/modelcutter <packname> build',
+    'ie /modelcutter pumpkin_hats build',
+    'This will create and load a datapack called pumpkin_hats.zip containing the recipes you defined',
+    'There is currently no way to replace existing datapacks so make sure to use a unique packname every time.',
+    ''
+  ]));
+);
+
+testing() -> (
+  print(player(), nbt_storage())
+);
 
 list_constructors() -> (
   print(player(), list_files('packs/', 'json'))

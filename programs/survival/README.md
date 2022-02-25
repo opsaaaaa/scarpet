@@ -320,6 +320,7 @@ Various scripts that modify various game elements, often replicating popular mod
     It will display a number in the scoreboard. Divide said number by 100 to get actual speed.
     Speed toggle in minihud is obviously much better.
 
+<<<<<<< HEAD
 ### [spellbook.sc](https://github.com/gnembon/scarpet/blob/master/programs/utilities/spellbook.sc):
 #### By Opsaaaaa
 	A in game utility for creating, using, and updating command books (spellbooks)
@@ -334,6 +335,8 @@ Various scripts that modify various game elements, often replicating popular mod
 	You can find more info in-game with the help command',
 	`/spellbook help <page>' Pages: `(main), basics, shorthands, customize, commands`
 
+=======
+>>>>>>> admin_spell_books
 ### [storage_drawers.sc](https://github.com/gnembon/scarpet/blob/master/programs/survival/storage_drawers.sc):
 #### By gnembonmc
 	There is a video on his channel about this.

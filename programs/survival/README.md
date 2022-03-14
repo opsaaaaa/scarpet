@@ -82,6 +82,11 @@ Various scripts that modify various game elements, often replicating popular mod
 	you have a 1/50 chance of getting a wet sponge.
 	Can be used to make renewable sponge without the use of lightning RNG manipulation,
 	which in 1.14+ is impossible, hence the name easier_renweable_sponge.
+	
+### [enchanting_table_bottling.sc](https://github.com/gnembon/scarpet/blob/master/programs/survival/enchanting_table_bottling.sc):
+#### By Firigion
+	Shift right clicking on an enchanting table with an empty glass bottle consumes it and generates a
+	bottle o' enchanting at the cost of a bit more xp that you would gain from using the bottle.
 
 ### [eyeremover.sc](https://github.com/gnembon/scarpet/blob/master/programs/survival/eyeremover.sc):
 #### By rv3r
@@ -138,8 +143,7 @@ Various scripts that modify various game elements, often replicating popular mod
 	and if they click on it again the unmarks that chunk.
 	Breaking the loadstone also unmarks the chunk.
 	
-	Warning, with this script enabled players can unmark chunks admins intend to stay loaded.
-	Only use this script on your server if you would trust your players with the `/forceload` command.
+	Note that with this script players can unmark forceload chunks set by admins.
 
 
 ### [magic_doors.sc](https://github.com/gnembon/scarpet/blob/master/programs/survival/magic_doors.sc):

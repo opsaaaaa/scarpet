@@ -12,8 +12,12 @@
 // Pages: (main), basics, shorthands, customize, commands
 
 
+global_app_name = system_info('app_name');
+global_app_permission = 'all';
+
+
 __config()->{
-  'command_permission' -> 'ops', 
+  'command_permission' -> global_app_permission, 
   'commands' -> {
     '' -> ['help', 'main'],
     'help' -> ['help', 'main'],
@@ -21,6 +25,7 @@ __config()->{
     'list' -> 'list_books',
     '<book> give' -> 'give_book',
     '<book> delete' -> 'delete_book',
+    '<book> delete confirm' -> 'delete_book_confirm',
     '<book> set <spell> <command>' -> 'set_command',
     '<book> warp <spell>' -> 'set_warp_at_player',
     '<book> warp <spell> at <location> in <dimension>' -> 'set_warp',
@@ -57,75 +62,80 @@ __config()->{
   }
 };
 
+_command_example(command) -> (
+  'ci /'+global_app_name+' '+command
+);
+_command_reference(command) -> (
+  'ci /'+global_app_name+' '+command
+);
 
 global_help_pages = {
   'main'-> [
     'pb \nSpellBook\n', 
     'm A utility used to create command books (spellbooks).\n',
     'm Learn the basics with: ',
-    'ci /spellbook help basics\n',
-    'm Pages: ','ci (main), basics, shorthands, customize, commands'
+    _command_example('help basics\n'),
   ],
   'basics' -> [
     'pb \nSpellBook Basics\n', 
     'm Create a new spell with this command\n',
-    'ci /spellbook <book> set <spell> </command>\n',
-    'm ie ', 'ci /spellbook cat_spells set "spawn cat" /summon cat\n',
-    'm You can add more spells to the book\n',
-    'ci /spellbook cat_spells set "spawn Tabby" /summon cat ~ ~ ~ {CatType:2}\n',
+    _command_reference('<book> set <spell> </command>'),
+    'm \nie ', _command_example('cat_spells set "spawn cat" /summon cat'),
+    'm \nYou can add more spells to the book\n',
+    _command_example('cat_spells set "spawn Tabby" /summon cat ~ ~ ~ {CatType:2}\n'),
     'm You can give yourself a copy of the spellbook with the spellbook give command\n',
-    'ci /spellbook cat_spells give\n',
-    'm Any changes you make to the spells will automatically update your spellbook when opened.'
+    _command_example('cat_spells give\n'),
+    'm Any changes you make to the spells will automatically update your spellbook when opened.\n'
   ],
   'shorthands' -> [
     'pb \nSpellbook Shorthands\n',
     'm The spellbook command has many shorthands to make life easier.\n',
     'm \nFor example you can add a warp spell to your current location.\n',
-    'ci /spellbook <book> warp <spell>\n',
+    _command_reference('<book> warp <spell>\n'),
     'm you can also be more specific\n',
-    'ci /spellbook transporter warp "Zero" at 0 0 0 in overworld\n',
-    'ci /spellbook <book> warp <spell> at <location> in <dimension>\n',
+    _command_example('transporter warp "Zero" at 0 0 0 in overworld'),
+    _command_reference('<book> warp <spell> at <location> in <dimension>\n'),
     'm \nThere is also a player bot shorthand that creates two spells. ',
     'm One to summon the player and the other kill the player\n',
-    'ci /spellbook farms bot "Which Hut" Dorothy\n',
-    'ci /spellbook <book> bot <spell> <botName> at 0 0 0 in <dimension>\n',
-    'ci /spellbook <book> bot <spell> <botName>\n',
+    _command_example('farms bot "Which Hut" Dorothy\n'),
+    _command_reference('<book> bot <spell> <botName> at 0 0 0 in <dimension>\n'),
+    _command_reference('<book> bot <spell> <botName>\n'),
     'm \nSome farms don\'t require player based mob spawning. ',    
     'm You also have the option to use force loading instead\n',
     'm The forceload shorthand creates one spell to load the chunks and another to unload the chunks.\n',
-    'ci /spellbook farms forceload "The Iron Bucket" 32 32 64 64\n',
-    'ci /spellbook <book> forceload <spell> <from> <to>\n',
-    'ci /spellbook <book> forceload <spell> <from> <to> in <dimension>\n'
+    _command_example('farms forceload "The Iron Bucket" 32 32 64 64\n'),
+    _command_reference('<book> forceload <spell> <from> <to>\n'),
+    _command_reference('<book> forceload <spell> <from> <to> in <dimension>\n')
   ],
   'customize'-> [
     'pb \nSpellbook Customization\n',
     'm you can customize the color or the tooltips of spells with the following commands.\n',
-    'ci /spellbook <book> tooltip <spell> <customTooltip>\n',
-    'ci /spellbook <book> color <spell> <customColor>\n',
+    _command_reference('<book> tooltip <spell> <customTooltip>\n'),
+    _command_reference('<book> color <spell> <customColor>\n'),
   ],
   'commands' -> [
     'pb \nSpellbook Commands\n',
-    'ci /spellbook <book> set <spell> </command> ',
+    _command_reference('<book> set <spell> </command> '),
     'm Add any command to the spellbook\n',
-    'ci /spellbook <book> give ',
+    _command_reference('<book> give '),
     'm Give the player a copy of the book\n',
-    'ci /spellbook <book> read ',
+    _command_reference('<book> read '),
     'm List the spells within a book\n',
-    'ci /spellbook list ',
+    _command_reference('list '),
     'm List all of the spellbooks\n',
-    'ci /spellbook <book> delete ',
+    _command_reference('<book> delete '),
     'm Delete the whole spellbook\n',
-    'ci /spellbook <book> remove <spell> ',
+    _command_reference('<book> remove <spell> '),
     'm Delete a spell\n',
-    'ci /spellbook <book> tooltip <spell> <customTooltip> ',
+    _command_reference('<book> tooltip <spell> <customTooltip> '),
     'm Customize a spells tooltip\n',
-    'ci /spellbook <book> color <spell> <customColor>\n',
+    _command_reference('<book> color <spell> <customColor>\n'),
     'm Customize a spells color\n',
-    'ci /spellbook <book> warp <spell>\n',
+    _command_reference('<book> warp <spell>\n'),
     'm Create a warp spell at your location\n',
-    'ci /spellbook <book> bot <spell> <botName>\n',
+    _command_reference('<book> bot <spell> <botName>\n'),
     'm Make a set of spells to summon and kill a player bot\n',
-    'ci /spellbook <book> forceload <spell> <from> <to>\n',
+    _command_reference('<book> forceload <spell> <from> <to>\n'),
     'm Make a set of spells to load and unload chunks\n'
   ]
 };
@@ -246,10 +256,33 @@ _sanitize_book_title(title) -> (
   return(replace(title, '[^A-z0-9_-]', '_'));
 );
 
+
+
 // Command Methods
 help(page) -> (
-  print(player(), format(global_help_pages:page));
+  p = player();
+  print(p, format(global_help_pages:page));
+  print(p, format(_display_page_links(page)));
+
 );
+
+_display_page_links(page) -> (
+  links = ['p Pages: '];
+  for(sort(keys(global_help_pages)),
+    if( page == _ ,
+      links += 'gi ('+ _ +')';
+    ,
+      links += 'ci ['+ _ +']';
+      links += '!/spellbook help '+ _;
+    );
+    links += 'g , ';
+  );
+  delete(links, -1);
+  links;
+);
+    // 'm Pages: ', ...(_display_page_links(['main', 'basics', 'shorthands', 'customize', 'commands'])) 
+
+
 
 // Player bot shorthand
 set_bot_at_player(book, spell, bot_name) -> (
@@ -321,9 +354,28 @@ list_books() -> (
   print(p, format( display ));
 );
 
+_is_admin(p) -> (p~'permission_level' == 4);
+
 delete_book(book) -> (
-  delete_file('books/'+book, 'json');
-  _print_message(player(), str('Burned the %s spellbook to ashes.', book));
+  p = player();
+  if(_is_admin(p),
+    print(p, format(
+      str('m Are you sure you want to delete the %s spellbook for good? ', book), 
+      'ci [confirm]', str('!/spellbook %s delete confirm', book)
+    ));
+  ,
+    _print_message(p, 'You don\'t have permission to delete spellbooks.'); 
+  );
+);
+
+delete_book_confirm(book) -> (
+  p = player();
+  if(_is_admin(p),
+    delete_file('books/'+book, 'json');
+    _print_message(p, str('Burned the %s spellbook to ashes.', book));
+  ,
+    _print_message(p, 'You don\'t have permission to delete spellbooks.'); 
+  );
 );
 
 _get_book_list() -> map( list_files('books/', 'json'), get(split('/',_), -1) );

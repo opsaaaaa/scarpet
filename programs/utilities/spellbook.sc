@@ -11,10 +11,13 @@
 // `/spellbook help <page>',
 // Pages: (main), basics, shorthands, customize, commands
 
+
 global_app_name = system_info('app_name');
+global_app_permission = 'all';
+
 
 __config()->{
-  'command_permission' -> 'ops', 
+  'command_permission' -> global_app_permission, 
   'commands' -> {
     '' -> ['help', 'main'],
     'help' -> ['help', 'main'],
@@ -351,16 +354,28 @@ list_books() -> (
   print(p, format( display ));
 );
 
+_is_admin(p) -> (p~'permission_level' == 4);
+
 delete_book(book) -> (
-  print(player(), format(
-    str('m Are you sure you want to delete the %s spellbook for good? ', book), 
-    'ci [confirm]', str('!/spellbook %s delete confirm', book)
-  ));
+  p = player();
+  if(_is_admin(p),
+    print(p, format(
+      str('m Are you sure you want to delete the %s spellbook for good? ', book), 
+      'ci [confirm]', str('!/spellbook %s delete confirm', book)
+    ));
+  ,
+    _print_message(p, 'You don\'t have permission to delete spellbooks.'); 
+  );
 );
 
 delete_book_confirm(book) -> (
-  delete_file('books/'+book, 'json');
-  _print_message(player(), str('Burned the %s spellbook to ashes.', book));
+  p = player();
+  if(_is_admin(p),
+    delete_file('books/'+book, 'json');
+    _print_message(p, str('Burned the %s spellbook to ashes.', book));
+  ,
+    _print_message(p, 'You don\'t have permission to delete spellbooks.'); 
+  );
 );
 
 _get_book_list() -> map( list_files('books/', 'json'), get(split('/',_), -1) );

@@ -7,15 +7,16 @@ __config()->{
   'commands' -> {
     '' -> 'help',
     'list' -> 'list_constructors',
-    '<packname> set <item> <model>' -> 'set_model_recipe',
-    '<packname> range <item> <rangeMin> <rangeMax>' -> 'range_model_recipes',
+    '<packname> set <ingredient> <result> <model>' -> 'set_model_recipe',
+    '<packname> range <ingredient> <result> <rangeMin> <rangeMax>' -> 'range_model_recipes',
     '<packname> list' -> 'list_recipes',
     '<packname> raw' -> 'read_raw_recipes',
     '<packname> build' -> 'build_datapack'
   },
   'arguments' -> {
     'packname' -> {'type' -> 'string'},
-    'item' -> {'type' -> 'item'},
+    'ingredient' -> {'type' -> 'item'},
+    'result' -> {'type' -> 'item'},
     'model' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000},
     'rangeMin' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000},
     'rangeMax' -> {'type' -> 'int', 'min' -> 1, 'max' -> 1000000}
@@ -37,11 +38,11 @@ help() -> (
     'The resource pack list all the numbers it uses for the CustomModelData.',
     'you can prepare recipes for these with one of two commands',
     '',
-    '/modelcutter <packname> set <item> <model>',
+    '/modelcutter <packname> set <item1> <item2> <model>',
     'ie. /modelcutter pumpkin_hats set carved_pumpkin 21',
     'Run this command for each custom carved_pumpkin varient you want craftable.',
     '',
-    '/modelcutter <packname> range <item> <rangeMin> <rangeMax>',
+    '/modelcutter <packname> range <item1> <item2> <rangeMin> <rangeMax>',
     'ie. /modelcutter pumpkin_hats range carved_pumpkin 21 29',
     'This command will prepare a recipe for each varient between 21 and 29. 21,22,23...29 ',
     '',
@@ -74,22 +75,24 @@ build_datapack(packname) -> (
   );
 );
 
-range_model_recipes(packname, item, min, max) -> (
-  item = item:0;
+range_model_recipes(packname, item1, item2, min, max) -> (
+  item1 = item1:0;
+  item2 = item2:0;
   datapack = _read_pack(packname) || _default_datapack(packname);
   for(range(min,max),
-    datapack:'data':packname:'recipes':str('%s_%d.json', item, _) = _new_model_recipe(item, _);
-    print(player(), str('%s_%d.json recipe prepared!', item, _));
+    datapack:'data':packname:'recipes':str('%s_%s_%d.json', item1, item2, _) = _new_model_recipe(item1, item2, _);
+    print(player(), str('%s_%s_%d.json recipe prepared!', item1, item2, _));
   );
   _write_pack(packname, datapack);
 );
 
-set_model_recipe(packname, item, model) -> (
-  item = item:0;
+set_model_recipe(packname, item1, model) -> (
+  item1 = item1:0;
+  item2 = item2:0;
   datapack = _read_pack(packname) || _default_datapack(packname);
-  datapack:'data':packname:'recipes':str('%s_%d.json', item, model) = _new_model_recipe(item, model);
+  datapack:'data':packname:'recipes':str('%s_%s_%d.json', item1, item2, model) = _new_model_recipe(item1, item2, model);
   _write_pack(packname, datapack);
-  print(player(), str('%s_%d.json recipe prepared!', item, model));
+  print(player(), str('%s_%s_%d.json recipe prepared!', item1, item2, model));
 );
 
 read_raw_recipes(packname) -> (
@@ -122,15 +125,15 @@ _default_datapack(packname) -> (
   {'data' -> {packname -> {'recipes' -> {} }}}
 );
 
-_new_model_recipe(item, model) -> (
+_new_model_recipe(ingredient, result, model) -> (
   print(player(),model);
   {
     'type' -> 'stonecutting',
     'ingredient' -> {
-      'item' -> item
+      'item' -> ingredient
     },
     'result' -> {
-      'item' -> item,
+      'item' -> result,
       'data' -> {
         'CustomModelData' -> number(model)
       }

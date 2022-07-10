@@ -86,7 +86,7 @@ range_model_recipes(packname, item1, item2, min, max) -> (
   _write_pack(packname, datapack);
 );
 
-set_model_recipe(packname, item1, model) -> (
+set_model_recipe(packname, item1, item2, model) -> (
   item1 = item1:0;
   item2 = item2:0;
   datapack = _read_pack(packname) || _default_datapack(packname);

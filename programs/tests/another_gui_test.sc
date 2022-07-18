@@ -83,11 +83,11 @@ global_gui_views = {
 
 
 
-__command()->inventory_gui(player(),'main',global_gui_views,{'rows'->3});
+__command()->inventory_gui(player(),'main',global_gui_views);
 
 
 // create a inventory gui, example buttons can be found in the global_gui_views variable
-inventory_gui(p, current_view, view_map, options) -> (
+inventory_gui(p, current_view, view_map) -> (
   for(keys(view_map),
 
     view_map:_:'max_slot' = max(keys(view_map:_:'buttons'));
@@ -109,13 +109,13 @@ inventory_gui(p, current_view, view_map, options) -> (
 
     if(!has(view_map:_,'blank'), view_map:_:'blank' = 'air');
   );
-  __create_gui_screen(p,current_view,view_map,options);
+  __create_gui_screen(p,current_view,view_map);
 );
 
 
 
-// create the screen and pass in buttons and options
-__create_gui_screen(p, current_view, view_map, options)->(
+// create the screen and pass in buttons
+__create_gui_screen(p, current_view, view_map)->(
   global_gui_lock = true;
   kind = str('generic_9x%d',view_map:current_view:'rows');
   screen = create_screen(
@@ -128,11 +128,9 @@ __create_gui_screen(p, current_view, view_map, options)->(
     action,
     data,
     outer(current_view),
-    outer(view_map),
-    outer(options),
-    outer(active)
+    outer(view_map)
   )->(
-    if(global_gui_lock, return());
+    if(global_gui_lock, return('cancel'));
 
     view = view_map:current_view;
     buttons = view:'buttons';
@@ -157,13 +155,13 @@ __create_gui_screen(p, current_view, view_map, options)->(
       );
       if(page != view_map:current_view:'page',
         view_map:current_view:'page' = page;
-        schedule(1,'__create_gui_screen', p, current_view, view_map, options);
+        schedule(1,'__create_gui_screen', p, current_view, view_map);
       );
 
     // elif
     // hangle buttons and nav
     ,has(buttons, slot),
-      data:'size' = options:'size';
+      data:'size' = view:'size';
 
       if(has(button,'actions'),
         // call actions when buttons are pressed
@@ -180,7 +178,7 @@ __create_gui_screen(p, current_view, view_map, options)->(
         nav = button:'nav';
         nav_view = nav:action || nav:str('%s:%d',action,data:'button');
         if(nav_view,
-          schedule(1,'__create_gui_screen', p, nav_view, view_map, options);
+          schedule(1,'__create_gui_screen', p, nav_view, view_map);
         );
       );
     );
@@ -191,7 +189,7 @@ __create_gui_screen(p, current_view, view_map, options)->(
       button:'foot'
 
     ,data:'slot' <= view_map:current_view:'size',//elif 
-      options:'foot' || view_map:current_view:'foot'
+      view_map:current_view:'foot'
     )
   ));
   __fill_gui_screen(screen, view_map:current_view);

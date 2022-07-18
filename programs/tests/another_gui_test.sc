@@ -209,7 +209,7 @@ __fill_gui_screen(screen, view) -> (
   // loop over each button and set the slot to it.
   if(view:'paginate',
     inventory_set(screen, size, page+1, pager, str(
-      '{display:{Name:\'[{"text":"%d/%d"}]\',Lore:[\'{"text":"%s"}\',\'{"text":"%s"}\']}}',
+      '{display:{Name:\'[{"text":"%d/%d"}]\',Lore:[\'{"text":"%s"}\',\'{"text":"%s"}\']},Enchantments:[{id: "_null", lvl: 1b}]}',
       page+1,ceil(max_slot/size),
       'Right Click +1',
       'Left Click -1'

@@ -16,7 +16,7 @@ _editor() -> (
   p = player();
   book = p~'holds';
   if('written_book' == book:0,
-    data = _decode_book_nbt(book:2);
+    data = decode_book_nbt(book:2);
     data:'pages' = _add_line_colors(data:'pages');
     print(p,data);
   ,
@@ -36,7 +36,7 @@ _add_line_colors(pages)->(
   return(pages)
 );
 
-_decode_book_nbt(data)->(
+decode_book_nbt(data)->(
   data = parse_nbt(data);
   for(data:'pages',
     page = try(decode_json(_),'json_error', data:'pages':_i);
@@ -45,7 +45,7 @@ _decode_book_nbt(data)->(
   data
 );
 
-_encode_book_nbt(data)->(
+encode_book_nbt(data)->(
   for(data:'pages',
     data:'pages':_i = encode_json(_)
   );

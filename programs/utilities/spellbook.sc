@@ -17,7 +17,7 @@ global_app_permission = 'all';
 
 
 __config()->{
-  'command_permission' -> global_app_permission, 
+  'command_permission' -> 1, 
   'commands' -> {
     '' -> ['help', 'main'],
     'help' -> ['help', 'main'],

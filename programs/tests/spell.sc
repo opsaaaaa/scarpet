@@ -2,14 +2,16 @@
 
 //--- GLOBALS ---//
 
+global_app = system_info('app_name');
 global_lang = 'en';
 
 global_spells = {
   'home'->{
+    'key'->'home',
     'title'->'Lets Go Home',
     'command'->'/say To bad looser',
     'tooltip'->'tp 730 79 -240',
-    'owner'->'615a6571-ee76-487e-9626-bf32627ec88e',
+    'owner'->'TinkerSwan',
     'tags'->['warp'],
     'v'->0
   }
@@ -53,6 +55,15 @@ _locales(lang, root, code)->({
       'forceload_remove'->'unload chunks from %s to %s in %s',
       'bot_spawn'->'Spawn %s bot at %s in %s',
       'bot_kill'->'Kill %s bot'
+    },
+    'btn'->{
+      'edit'->'[Edit]',
+      'title'->'[Title]',
+      'tooltip'->'[Tooltip]',
+      'color'->'[Color]',
+      'owner'->'[Owner]',
+      'run'->'(Run)',
+      'tags'->'[Tags]'
     }
   }
 }:lang:root:code);
@@ -81,6 +92,7 @@ _shorthand_command(code)->({
 }:code);
 
 
+
 //--- TINY LIB STYLE METHODS ---//
 
 uniq(list)->(keys(m(... list)));
@@ -100,9 +112,10 @@ __config()->{
   'command_permission' -> 1, 
   'commands' -> {
 
-    'list'->['list', 1], 
-    'list <page>'->'list', 
-    
+    'list'->['list', 1, 'all'], 
+    'list <page>'->['list', 'all'], 
+    'list <page> <spelltag>'->'list', 
+
     'run <spell>' -> 'run_spell',
 
     'set <spell> <command>' -> 'set_spell',
@@ -117,15 +130,17 @@ __config()->{
     // 'bot <spell>' -> 'set_bot_at_player',
     // 'bot <spell> <bot> at <location> in <dimension>' -> 'set_bot',
 
-    '<spell> tags add <spelltags>' -> 'add_tags',
-    '<spell> tags remove <spelltags>' -> 'remove_tags',
-
+    '<spell> tags <spelltags>' -> 'set_tags',
     '<spell> color <color>' -> ['set_detail', 'color'],
     '<spell> tooltip <tooltip>' -> ['set_detail', 'tooltip'],
     '<spell> owner <owner>' -> 'set_owner',
     '<spell> title <text>' -> ['set_detail', 'title']
   },
   'arguments' -> {
+    'spelltag'-> {
+      'type'->'term',
+      'suggester' -> _(args) -> (keys(global_tags))
+    },
     'spelltags' -> {
       'type' -> 'text',
       'suggester' -> _(args) -> (
@@ -181,41 +196,28 @@ __config()->{
 
 //--- COMMAND ENTRY POINTS ---//
 
-list(page) -> (
-  _chat(reduce(keys(global_spells),
-    _a += ('b '+_+'\n');
-  ,[]));
-);
+list(page, spelltag) -> (
+  spells = spells_by_tag(spelltag);
 
-
-add_tags(spell, tags)->(
-  if( _has_error_no_spell(spell) ||
-      _has_error_cant_change(player(), spell, 'tags'),
-      return());
-
-  global_spells:spell:'tag' = uniq(merge(
-    global_spells:spell:'tags',
-    split(' ', tags)
-  ));
-
-  _info('removed_tags', tags, spell);
-);
-
-remove_tags(spell, tags)->(
-  if( _has_error_no_spell(spell) ||
-      _has_error_cant_change(player(), spell, 'tags'),
-      return());
-
-  tags = split(' +', tags);
-  for(global_spells:spell:'tags',
-    if(tags~_,
-      delete(global_spells:spell:tags,_i);
-    )
+  for(spells,
+    _spell_editor(_);
   );
-
-  _info('added_tags', join(' ',tags), spell);
+  // command color tags tooltip owner title
+  // _chat(reduce(spells,
+  //   _a += ('b '+_+'\n');
+  // ,[]));
 );
 
+
+set_tags(spell, tags)->(
+  if( _has_error_no_spell(spell) ||
+      _has_error_cant_change(player(), spell, 'tags'),
+      return());
+
+  _set_detail(spell, split(' +',tags), 'tags');
+
+  _info('set_tags', tags, spell);
+);
 
 ask_delete_spell(spell) -> (
   _info('should_delete_spell', spell);
@@ -249,7 +251,7 @@ set_owner(spell, owner_name) -> (
 
   _set_detail(spell,owner_id(owner),'owner');
 
-  _info('set_detail', 'owner', spell, owner~'command_name');
+  _info('set_detail', 'owner', spell, owner);
 );
 
 run_spell(spell) -> (
@@ -261,6 +263,11 @@ run_spell(spell) -> (
 );
 
 set_spell(spell,command) -> (
+  if( has(global_spell, spell) &&
+      _has_error_cant_change(player(), spell, 'command'),
+      return());
+  
+
   _update_or_create_spell(spell, {
     'key'->spell,
     'command'->command
@@ -295,9 +302,15 @@ _update_or_create_spell(spell, new_data) -> (
 //--- FETCH THINGS ---//
 
 
-owner_id(p)->(p~'uuid');
+spells_by_tag(spelltag)->if(spelltag == 'all',
+  values(global_spells),
+  filter(values(global_spells), _:'tags'~spelltag)
+);
+
+owner_id(p)->(p~'command_name');
 
 _default_spell(spell,command)->{
+  'key'->spell,
   'title'->titlize(spell),
   'command'->command,
   'tooltip'->command,
@@ -306,6 +319,7 @@ _default_spell(spell,command)->{
   'v'->0,
   'tags'->[]
 };
+
 
 //--- CONDITIONALS ---//
 
@@ -329,17 +343,64 @@ _has_error_no_player(p,name)->_has_error(!p,'no_player_found', name);
 
 _has_error(check, code, ...params)->(check && (_error(code, ...params); true));
 
+//--- SPELL EDITOR ---//
 
 
-//--- MESSAGES and CHAT DISPLAY ---//
+// Title - Owner - tag1 tag2 tag3
+// (run) /command
+// [Edit] [Title] [Tooltip] [Color] [owner] [Tags]
+_spell_editor(spell)->_chat(
+  'w \n',
+  'mb '+spell:'title'+' ',
+  'f - ',
+  'p '+spell:'tooltip'+' ',
+  'f - ',
+  't '+spell:'owner'+' ',
+  
+  'w \n',
+  'ig '+join(' ',spell:'tags'),
+
+  'w \n',
+  ..._editable('l', 'edit', 'set', spell:'key', spell:'command'),
+  ..._editable_detail('l', spell, 'title'),
+  ..._editable_detail('t', spell, 'owner'),
+  ..._editable_detail('q', spell, 'tooltip'),
+  ..._editable('q', 'tags', spell:'key', 'tags', join(' ',spell:'tags')),
+  ..._editable_detail('q', spell, 'color'),
+  ..._clickable('rb', 'run', 'run', spell:'key'),
+
+  'w \n',
+  ..._copyable('if', spell:'command'),
+
+  'w \n'
+);
+
+_editable_detail(col, spell, detail)->_editable(col, detail, spell:'key', detail, spell:detail);
+
+
+
+//--- CHAT DISPLAY ---//
+
+_chat(...lines)->print(player(),format(lines));
+
+_clickable(col,btn,...cmd)->(
+  cmd = '/'+global_app+' '+join(' ',cmd);
+  [col+' '+_btn(btn)+' ', '!'+cmd, '^g '+cmd]
+);
+
+_editable(col,btn,...cmd)->[col+' '+_btn(btn)+' ', '?/'+global_app+' '+join(' ',cmd),];
+
+_copyable(col,txt)->[col+' '+txt, '^'+col+' Copy', '&' + txt];
+
+//--- MESSAGES ---//
+
+_btn(code)->i18n('btn', code);
 
 _info(info, ...params)->_msg('mb '+i18n('info',info), params);
 
 _error(err, ...params)->_msg('br '+i18n('error',err), params);
 
 _msg(msg, params)->print(player(),format(str(msg, params)));
-
-_chat(lines)->print(player(),format(lines));
 
 i18n(root,code)->(
   _locales(global_lang,root,code) ||

@@ -199,6 +199,8 @@ __config()->{
 list(page, spelltag) -> (
   spells = spells_by_tag(spelltag);
 
+  print([page, spelltag, spells]);
+
   for(spells,
     _spell_editor(_);
   );
@@ -302,9 +304,10 @@ _update_or_create_spell(spell, new_data) -> (
 //--- FETCH THINGS ---//
 
 
-spells_by_tag(spelltag)->if(spelltag == 'all',
+spells_by_tag(spelltag)->if(
+  spelltag == 'all',
   values(global_spells),
-  filter(values(global_spells), _:'tags'~spelltag)
+  filter(values(global_spells), (_:'tags'~spelltag) != null)
 );
 
 owner_id(p)->(p~'command_name');
